@@ -117,7 +117,7 @@ export function CommandBar({
         onClick={(e) => e.stopPropagation()}
       >
         <Command
-          className="bg-surface border border-surface-highlight/70 shadow-2xl rounded-xl overflow-hidden text-slate-100 flex flex-col ring-1 ring-white/10"
+          className="bg-surface border border-surface-highlight/70 shadow-2xl rounded-xl overflow-hidden text-slate-100 flex flex-col ring-1 ring-white/10 focus-within:ring-2 focus-within:ring-brand focus-within:border-brand transition-all"
           shouldFilter={false} // We do custom fuzzy/substring filtering
         >
           {/* Input row */}
@@ -150,14 +150,14 @@ export function CommandBar({
               <div className="py-8 px-6 text-center">
                 <p className="text-sm text-slate-400">
                   No matching go-link found for{' '}
-                  <span className="text-indigo-400 font-mono font-medium">
+                  <span className="text-brand font-mono font-medium">
                     &quot;go/{search.trim()}&quot;
                   </span>
                 </p>
                 <button
                   type="button"
                   onClick={() => handleCreateNew(search.trim())}
-                  className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-brand-600 hover:bg-brand-500 text-white rounded-lg transition-colors shadow-sm"
+                  className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-brand hover:opacity-90 text-brand-foreground rounded-lg transition-colors shadow-sm"
                 >
                   <PlusCircle className="w-4 h-4" />
                   Create go/{search.trim()}
@@ -179,15 +179,15 @@ export function CommandBar({
                     key={link.id}
                     value={link.keyword}
                     onSelect={() => handleSelectLink(link)}
-                    className="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-colors hover:bg-surface-elevated data-[selected=true]:bg-brand-600/20 data-[selected=true]:text-white text-slate-300 border border-transparent data-[selected=true]:border-brand-500/30 group"
+                    className="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-colors hover:bg-surface-elevated data-[selected=true]:bg-brand-subtle data-[selected=true]:text-brand text-slate-300 border border-transparent data-[selected=true]:border-brand-muted group"
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-8 h-8 rounded-md bg-surface-elevated flex items-center justify-center text-brand-400 group-hover:text-brand-300 shrink-0 border border-surface-highlight">
+                      <div className="w-8 h-8 rounded-md bg-surface-elevated flex items-center justify-center text-brand group-hover:text-brand shrink-0 border border-surface-highlight">
                         <Hash className="w-4 h-4" />
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="font-semibold text-slate-100 font-mono">
+                          <span className="font-semibold text-slate-100 group-data-[selected=true]:text-brand font-mono">
                             go/{link.keyword}
                           </span>
                           <span className="text-xs text-slate-500 truncate max-w-[200px]">
@@ -222,10 +222,10 @@ export function CommandBar({
                   className="w-full flex items-center justify-between p-2 rounded-lg text-xs text-slate-300 hover:bg-surface-elevated hover:text-white transition-colors"
                 >
                   <div className="flex items-center gap-2">
-                    <PlusCircle className="w-4 h-4 text-brand-400" />
+                    <PlusCircle className="w-4 h-4 text-brand" />
                     <span>
                       Create new go-link:{' '}
-                      <span className="font-mono text-brand-400 font-semibold">
+                      <span className="font-mono text-brand font-semibold">
                         go/{search.trim()}
                       </span>
                     </span>
@@ -241,7 +241,7 @@ export function CommandBar({
           {/* Footer bar */}
           <div className="px-4 py-2.5 bg-surface-elevated/60 border-t border-surface-elevated flex items-center justify-between text-xs text-slate-400">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-3.5 h-3.5 text-brand-400" />
+              <Sparkles className="w-3.5 h-3.5 text-brand" />
               <span>Stager Omnibox Engine</span>
             </div>
             <div className="flex items-center gap-4">

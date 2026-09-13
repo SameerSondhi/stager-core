@@ -4,6 +4,9 @@ export const MOCK_ORGANIZATION: Organization = {
   id: 'a0000000-0000-0000-0000-000000000001',
   name: 'Acme Corp',
   slug: 'acme',
+  brand_color: '#10b981',
+  display_name: 'Acme Health',
+  logo_url: null,
   created_at: new Date('2026-01-01T00:00:00Z').toISOString(),
 };
 

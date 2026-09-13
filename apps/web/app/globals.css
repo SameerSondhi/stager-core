@@ -1,0 +1,95 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #090d16;
+  --foreground: #f8fafc;
+  --brand-primary: #10b981;
+  --brand-muted: rgba(16, 185, 129, 0.2);
+  --brand-subtle: rgba(16, 185, 129, 0.08);
+  --brand-foreground: #ffffff;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  overflow-x: hidden;
+}
+
+/* cmdk styles */
+[cmdk-root] {
+  max-width: 640px;
+  width: 100%;
+  background: #0f172a;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+  border: 1px solid #334155;
+  overflow: hidden;
+}
+
+[cmdk-input] {
+  width: 100%;
+  padding: 16px;
+  font-size: 15px;
+  color: #f8fafc;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #1e293b;
+  outline: none;
+}
+
+[cmdk-input]::placeholder {
+  color: #64748b;
+}
+
+[cmdk-list] {
+  max-height: 340px;
+  overflow-y: auto;
+  padding: 8px;
+  overscroll-behavior: contain;
+}
+
+[cmdk-item] {
+  content-visibility: auto;
+  cursor: pointer;
+  height: 48px;
+  border-radius: 8px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px;
+  color: #cbd5e1;
+  user-select: none;
+  transition: all 150ms ease;
+}
+
+[cmdk-item][data-selected='true'] {
+  background: #1e293b;
+  color: #f8fafc;
+}
+
+[cmdk-item]:active {
+  background: #334155;
+}
+
+[cmdk-empty] {
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 96px;
+  white-space: pre-wrap;
+  color: #94a3b8;
+}
+
+[cmdk-group-heading] {
+  user-select: none;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  padding: 8px 8px 4px 8px;
+}

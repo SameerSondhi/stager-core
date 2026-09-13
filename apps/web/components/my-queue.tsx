@@ -97,8 +97,8 @@ export function MyQueueWidget({ queue, onOpenSettings }: MyQueueProps) {
             onClick={() => setActiveTab('jira')}
             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-all ${
               activeTab === 'jira'
-                ? 'bg-brand-600 text-white font-medium shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'border border-brand text-brand bg-brand-subtle font-medium shadow-sm'
+                : 'text-slate-400 hover:text-slate-200 border border-transparent'
             }`}
           >
             <CheckSquare className="w-3.5 h-3.5" />
@@ -110,8 +110,8 @@ export function MyQueueWidget({ queue, onOpenSettings }: MyQueueProps) {
             onClick={() => setActiveTab('prs')}
             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-all ${
               activeTab === 'prs'
-                ? 'bg-brand-600 text-white font-medium shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'border border-brand text-brand bg-brand-subtle font-medium shadow-sm'
+                : 'text-slate-400 hover:text-slate-200 border border-transparent'
             }`}
           >
             <GitPullRequest className="w-3.5 h-3.5" />
@@ -122,8 +122,8 @@ export function MyQueueWidget({ queue, onOpenSettings }: MyQueueProps) {
             onClick={() => setActiveTab('calendar')}
             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-all ${
               activeTab === 'calendar'
-                ? 'bg-brand-600 text-white font-medium shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'border border-brand text-brand bg-brand-subtle font-medium shadow-sm'
+                : 'text-slate-400 hover:text-slate-200 border border-transparent'
             }`}
           >
             <Calendar className="w-3.5 h-3.5" />
@@ -270,7 +270,7 @@ export function MyQueueWidget({ queue, onOpenSettings }: MyQueueProps) {
                   href={evt.meetingUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium bg-brand-600 hover:bg-brand-500 text-white transition-colors shrink-0 shadow-sm"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium bg-brand hover:opacity-90 text-brand-foreground transition-all shrink-0 shadow-sm shadow-brand/10"
                 >
                   <Video className="w-3.5 h-3.5" />
                   Join

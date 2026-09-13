@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stager Side Panel</title>
+  <style>
+    :root {
+      --brand-primary: #10b981;
+      --brand-muted: rgba(16, 185, 129, 0.2);
+      --brand-subtle: rgba(16, 185, 129, 0.08);
+      --brand-foreground: #ffffff;
+      --background: #090d16;
+      --surface: #0f172a;
+      --surface-elevated: #1e293b;
+      --surface-highlight: #334155;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      background-color: var(--background);
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 13px;
+      line-height: 1.4;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Enterprise Top Status Strip */
+    .top-strip {
+      background: rgba(30, 41, 59, 0.5);
+      border-bottom: 1px solid rgba(51, 65, 85, 0.6);
+      padding: 6px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+    }
+    .org-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .org-avatar {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 10px;
+      background: var(--brand-subtle);
+      color: var(--brand-primary);
+      border: 1px solid var(--brand-muted);
+    }
+    .org-name {
+      font-family: monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #94a3b8;
+      font-weight: 500;
+    }
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: #94a3b8;
+      font-size: 10px;
+    }
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--brand-primary);
+      box-shadow: 0 0 6px var(--brand-primary);
+    }
+
+    /* Main Container */
+    .panel-content {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      flex: 1;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--surface-elevated);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 14px;
+      color: #fff;
+    }
+    .badge {
+      font-size: 10px;
+      padding: 2px 7px;
+      background: var(--brand-subtle);
+      color: var(--brand-primary);
+      border-radius: 4px;
+      border: 1px solid var(--brand-muted);
+      font-family: monospace;
+    }
+    .open-full-btn {
+      color: #94a3b8;
+      font-size: 11px;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: color 0.15s;
+    }
+    .open-full-btn:hover { color: #fff; }
+
+    /* Search Input */
+    .search-container {
+      position: relative;
+    }
+    .search-input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--surface-highlight);
+      border-radius: 8px;
+      padding: 8px 12px 8px 30px;
+      color: #fff;
+      font-size: 12px;
+      outline: none;
+      transition: all 0.15s;
+    }
+    .search-input:focus {
+      border-color: var(--brand-primary);
+      box-shadow: 0 0 0 2px var(--brand-subtle);
+    }
+    .search-icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #64748b;
+      font-size: 12px;
+    }
+
+    /* Broadcast Banner */
+    .broadcast-card {
+      background: var(--surface);
+      border: 1px solid var(--surface-highlight);
+      border-radius: 8px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .broadcast-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .dept-badge {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(245, 158, 11, 0.15);
+      color: #f59e0b;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .ack-btn {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 1px solid var(--surface-highlight);
+      background: var(--surface-elevated);
+      color: #cbd5e1;
+      transition: all 0.15s;
+    }
+    .ack-btn:hover {
+      background: var(--brand-primary);
+      color: var(--brand-foreground);
+      border-color: var(--brand-primary);
+    }
+    .ack-btn.acked {
+      background: var(--brand-subtle);
+      color: var(--brand-primary);
+      border-color: var(--brand-muted);
+      cursor: default;
+    }
+
+    /* Section Headings */
+    .section-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #64748b;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    /* Go-Links */
+    .links-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .link-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px;
+      background: var(--surface);
+      border: 1px solid var(--surface-elevated);
+      border-radius: 8px;
+      text-decoration: none;
+      color: #cbd5e1;
+      transition: all 0.15s;
+      cursor: pointer;
+    }
+    .link-item:hover {
+      background: var(--surface-elevated);
+      border-color: var(--brand-muted);
+      color: #fff;
+    }
+    .link-key {
+      font-family: monospace;
+      font-weight: 600;
+      color: var(--brand-primary);
+      font-size: 12px;
+    }
+    .link-desc {
+      font-size: 11px;
+      color: #64748b;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 180px;
+    }
+
+    /* Personal Queue Tabs */
+    .queue-section {
+      background: var(--surface);
+      border: 1px solid var(--surface-highlight);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .queue-tabs {
+      display: flex;
+      background: var(--surface-elevated);
+      border-bottom: 1px solid var(--surface-highlight);
+      padding: 2px;
+    }
+    .queue-tab {
+      flex: 1;
+      text-align: center;
+      padding: 6px 4px;
+      font-size: 11px;
+      font-weight: 500;
+      color: #94a3b8;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s;
+    }
+    .queue-tab.active {
+      background: var(--brand-subtle);
+      color: var(--brand-primary);
+      border-color: var(--brand-muted);
+      font-weight: 600;
+    }
+    .queue-content {
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .queue-item {
+      padding: 8px;
+      background: rgba(30, 41, 59, 0.4);
+      border: 1px solid rgba(51, 65, 85, 0.5);
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .queue-item:hover {
+      background: var(--surface-elevated);
+      border-color: var(--brand-muted);
+    }
+    .queue-item-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .queue-key {
+      font-family: monospace;
+      font-size: 11px;
+      color: var(--brand-primary);
+      font-weight: 600;
+    }
+    .queue-summary {
+      font-size: 11px;
+      color: #cbd5e1;
+      line-height: 1.3;
+    }
+    .join-btn {
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: var(--brand-primary);
+      color: var(--brand-foreground);
+      font-size: 10px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      align-self: flex-start;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Enterprise Top Status Strip -->
+  <div class="top-strip">
+    <div class="org-badge">
+      <span id="orgAvatar" class="org-avatar">A</span>
+      <span id="orgTitle" class="org-name">Acme Health // Mission Control</span>
+    </div>
+    <div class="status-indicator">
+      <span class="status-dot"></span>
+      <span>Live</span>
+    </div>
+  </div>
+
+  <div class="panel-content">
+    <!-- Header -->
+    <header>
+      <div class="brand">
+        <span>⚡ Stager</span>
+        <span id="tenantBadge" class="badge">Acme Health</span>
+      </div>
+      <a href="http://localhost:3000" target="_blank" class="open-full-btn">
+        Open Full ↗
+      </a>
+    </header>
+
+    <!-- Search Input -->
+    <div class="search-container">
+      <span class="search-icon">🔍</span>
+      <input
+        id="sideSearch"
+        class="search-input"
+        type="text"
+        placeholder="Search go-links..."
+      />
+    </div>
+
+    <!-- Pinned Broadcast Announcement (if any) -->
+    <div id="broadcastContainer" style="display: none;">
+      <div class="section-title">
+        <span>Pinned Announcement</span>
+      </div>
+      <div id="broadcastCard" class="broadcast-card">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+    <!-- Quick Launchpad -->
+    <div>
+      <div class="section-title">
+        <span>Quick Launchpad</span>
+        <span id="linkCount" style="font-family: monospace; font-size: 10px;">5 links</span>
+      </div>
+      <div id="linksList" class="links-list">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+    <!-- Personal Triage Queue -->
+    <div>
+      <div class="section-title">
+        <span>Personal Queue</span>
+      </div>
+      <div class="queue-section">
+        <div class="queue-tabs">
+          <div id="tabJira" class="queue-tab active">Jira (<span id="jiraCount">0</span>)</div>
+          <div id="tabPrs" class="queue-tab">PRs (<span id="prsCount">0</span>)</div>
+          <div id="tabCal" class="queue-tab">Cal (<span id="calCount">0</span>)</div>
+        </div>
+        <div id="queueContent" class="queue-content">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/sidepanel.ts"></script>
+</body>
+</html>

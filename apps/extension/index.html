@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stager New Tab</title>
+  <style>
+    :root {
+      --brand-primary: #10b981;
+      --brand-muted: rgba(16, 185, 129, 0.2);
+      --brand-subtle: rgba(16, 185, 129, 0.08);
+      --brand-foreground: #ffffff;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: #090d16;
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 16px;
+      padding: 32px;
+      max-width: 520px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--brand-subtle);
+      color: var(--brand-primary);
+      border: 1px solid var(--brand-muted);
+      margin-bottom: 16px;
+    }
+    h1 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+    p { font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 24px; }
+    .search-box {
+      display: flex;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 20px;
+      transition: border-color 0.15s;
+    }
+    .search-box:focus-within {
+      border-color: var(--brand-primary);
+    }
+    .prefix {
+      padding: 10px 14px;
+      background: #0f172a;
+      border-right: 1px solid #334155;
+      font-family: monospace;
+      font-size: 13px;
+      color: var(--brand-primary);
+      font-weight: bold;
+    }
+    input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      padding: 10px 14px;
+      color: #fff;
+      font-size: 13px;
+      outline: none;
+    }
+    .actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+    .btn {
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+    }
+    .btn-primary {
+      background: var(--brand-primary);
+      color: var(--brand-foreground);
+    }
+    .btn-primary:hover { opacity: 0.9; }
+    .status {
+      margin-top: 24px;
+      font-size: 11px;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--brand-primary);
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="badge">
+      ⚡ STAGER ENTERPRISE
+    </div>
+    <h1>Connecting to Stager Web...</h1>
+    <p>
+      Redirecting to your enterprise dashboard at <code style="color:#818cf8;">http://localhost:3000</code>.
+      You can also jump directly using the shortcut bar below:
+    </p>
+
+    <form id="goForm" class="search-box">
+      <span class="prefix">go/</span>
+      <input id="keywordInput" type="text" placeholder="github, docs, standup, jira..." autofocus />
+    </form>
+
+    <div class="actions">
+      <button id="goBtn" class="btn btn-primary">Go to Destination</button>
+      <a href="http://localhost:3000" class="btn" style="background:#1e293b; color:#cbd5e1;">Open Dashboard</a>
+    </div>
+
+    <div class="status">
+      <span class="dot"></span>
+      <span>Omnibox enabled: type "go &lt;keyword&gt;" in address bar</span>
+    </div>
+  </div>
+
+  <script type="module" src="/src/newtab.ts"></script>
+</body>
+</html>

@@ -2,6 +2,9 @@ export interface Organization {
   id: string;
   name: string;
   slug: string;
+  brand_color: string;
+  logo_url?: string | null;
+  display_name?: string | null;
   created_at: string;
 }
 

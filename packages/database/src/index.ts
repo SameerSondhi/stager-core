@@ -52,6 +52,10 @@ class InMemoryStore {
     googleCalendar: { connected: false, account: null, connectedAt: null },
   };
 
+  async getOrganization(orgId: string = MOCK_ORGANIZATION.id): Promise<Organization> {
+    return { ...MOCK_ORGANIZATION };
+  }
+
   async getGoLinks(): Promise<GoLink[]> {
     return [...this.goLinks].sort((a, b) => b.click_count - a.click_count);
   }
@@ -173,6 +177,19 @@ class InMemoryStore {
 const globalStore = new InMemoryStore();
 
 export const stagerDb = {
+  async getOrganization(orgId: string = MOCK_ORGANIZATION.id): Promise<Organization> {
+    const supabase = getSupabaseClient();
+    if (supabase) {
+      const { data, error } = await supabase
+        .from('organizations')
+        .select('*')
+        .eq('id', orgId)
+        .maybeSingle();
+      if (!error && data) return data as Organization;
+    }
+    return globalStore.getOrganization(orgId);
+  },
+
   async getGoLinks(): Promise<GoLink[]> {
     const supabase = getSupabaseClient();
     if (supabase) {

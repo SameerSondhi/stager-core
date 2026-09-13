@@ -13,7 +13,7 @@ import {
   RefreshCw,
   Settings,
 } from 'lucide-react';
-import { GoLink, Broadcast, PersonalQueue, MOCK_PROFILE, OAuthConnections } from '@stager/database';
+import { GoLink, Broadcast, PersonalQueue, MOCK_PROFILE, OAuthConnections, Organization } from '@stager/database';
 import { CommandBar } from '../components/command-bar';
 import { BroadcastsWidget } from '../components/broadcasts';
 import { LaunchpadGrid } from '../components/launchpad-grid';
@@ -22,6 +22,7 @@ import { CreateLinkModal } from '../components/create-link-modal';
 import { SettingsModal } from '../components/settings-modal';
 
 export default function DashboardPage() {
+  const [org, setOrg] = useState<Organization | null>(null);
   const [goLinks, setGoLinks] = useState<GoLink[]>([]);
   const [broadcasts, setBroadcasts] = useState<Broadcast[]>([]);
   const [queue, setQueue] = useState<PersonalQueue | null>(null);
@@ -40,13 +41,18 @@ export default function DashboardPage() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [linksRes, broadcastsRes, queueRes, connectionsRes] = await Promise.all([
+      const [linksRes, broadcastsRes, queueRes, connectionsRes, orgRes] = await Promise.all([
         fetch('/api/v1/go-links'),
         fetch('/api/v1/broadcasts'),
         fetch('/api/v1/queue'),
         fetch('/api/v1/oauth/connections'),
+        fetch('/api/v1/organization'),
       ]);
 
+      if (orgRes.ok) {
+        const data = await orgRes.json();
+        if (data.organization) setOrg(data.organization);
+      }
       if (linksRes.ok) {
         const data = await linksRes.json();
         setGoLinks(data.go_links || []);
@@ -148,15 +154,15 @@ export default function DashboardPage() {
       <header className="sticky top-0 z-40 w-full border-b border-surface-highlight/80 bg-surface/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-brand-600 to-indigo-400 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
+            <div className="w-8 h-8 rounded-lg bg-brand flex items-center justify-center text-brand-foreground shadow-md shadow-brand/20">
               <Layers className="w-4 h-4" />
             </div>
             <div className="flex items-baseline gap-2">
               <span className="font-bold text-base tracking-tight text-white">
                 Stager
               </span>
-              <span className="text-xs px-1.5 py-0.5 rounded bg-surface-elevated text-slate-400 border border-surface-highlight font-mono">
-                Acme Corp
+              <span className="text-xs px-2 py-0.5 rounded bg-brand-subtle text-brand border border-brand-muted font-mono">
+                {org?.display_name || org?.name || 'Acme Health'}
               </span>
             </div>
           </div>
@@ -165,7 +171,7 @@ export default function DashboardPage() {
           <button
             type="button"
             onClick={() => setCommandOpen(true)}
-            className="flex items-center justify-between w-72 md:w-96 px-3 py-1.5 rounded-lg bg-surface-elevated/70 hover:bg-surface-elevated border border-surface-highlight hover:border-brand-500/50 text-slate-400 hover:text-slate-200 transition-all text-xs"
+            className="flex items-center justify-between w-72 md:w-96 px-3 py-1.5 rounded-lg bg-surface-elevated/70 hover:bg-surface-elevated border border-surface-highlight hover:border-brand-muted text-slate-400 hover:text-slate-200 transition-all text-xs"
           >
             <span className="flex items-center gap-2">
               <Search className="w-3.5 h-3.5 text-slate-500" />
@@ -179,7 +185,7 @@ export default function DashboardPage() {
           {/* User profile & quick action */}
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-brand animate-pulse" />
               <span>Omnibox Ready</span>
             </div>
 
@@ -192,7 +198,7 @@ export default function DashboardPage() {
               <Settings className="w-4 h-4" />
             </button>
             <div className="flex items-center gap-2 pl-3 border-l border-surface-elevated">
-              <div className="w-7 h-7 rounded-full bg-surface-elevated border border-surface-highlight flex items-center justify-center text-xs font-semibold text-brand-300">
+              <div className="w-7 h-7 rounded-full bg-brand-subtle border border-brand-muted flex items-center justify-center text-xs font-semibold text-brand">
                 AM
               </div>
               <span className="hidden md:inline text-xs font-medium text-slate-300">
@@ -208,7 +214,7 @@ export default function DashboardPage() {
         {/* Banner / Header Info */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-surface to-surface-elevated/60 border border-surface-highlight/70">
           <div>
-            <div className="flex items-center gap-2 text-xs font-medium text-brand-400 mb-1">
+            <div className="flex items-center gap-2 text-xs font-medium text-brand mb-1">
               <Zap className="w-3.5 h-3.5" />
               <span>Contextual Workspace Command Center</span>
             </div>
@@ -228,7 +234,7 @@ export default function DashboardPage() {
                 setSuggestedKeyword('');
                 setCreateModalOpen(true);
               }}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium bg-brand-600 hover:bg-brand-500 text-white transition-colors shadow-sm"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium bg-brand hover:opacity-90 text-brand-foreground transition-all shadow-sm shadow-brand/10"
             >
               <Plus className="w-4 h-4" />
               Add Go-Link
