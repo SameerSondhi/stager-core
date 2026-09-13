@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Link2, PlusCircle, Check } from 'lucide-react';
+import { X, PlusCircle } from 'lucide-react';
 
 interface CreateLinkModalProps {
   open: boolean;

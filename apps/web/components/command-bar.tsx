@@ -17,7 +17,6 @@ import {
   CornerDownLeft,
   Sparkles,
   Megaphone,
-  Command as CmdIcon,
 } from 'lucide-react';
 import { GoLink, interpolateGoLinkUrl, isParameterizedGoLink, parseGoLinkInput, goLinkParamPlaceholder } from '@stager/database';
 
