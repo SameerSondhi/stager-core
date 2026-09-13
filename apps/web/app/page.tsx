@@ -5,11 +5,8 @@ import {
   Layers,
   Search,
   Command,
-  Sparkles,
   Zap,
-  Globe,
   Plus,
-  ShieldCheck,
   RefreshCw,
   Settings,
 } from 'lucide-react';

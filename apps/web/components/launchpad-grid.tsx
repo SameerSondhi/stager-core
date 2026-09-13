@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import {
-  Link2,
   ExternalLink,
   Copy,
   Check,

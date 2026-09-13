@@ -1,6 +1,9 @@
 import { defineConfig } from 'vite';
-import { resolve } from 'path';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
+
+const extensionRoot = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   build: {
@@ -8,9 +11,9 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: {
-        newtab: resolve(__dirname, 'index.html'),
-        sidepanel: resolve(__dirname, 'sidepanel.html'),
-        background: resolve(__dirname, 'src/background.ts'),
+        newtab: resolve(extensionRoot, 'index.html'),
+        sidepanel: resolve(extensionRoot, 'sidepanel.html'),
+        background: resolve(extensionRoot, 'src/background.ts'),
       },
       output: {
         entryFileNames: (chunkInfo) => {

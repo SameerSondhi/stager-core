@@ -1,3 +1,4 @@
+import type { CSSProperties, ReactNode } from 'react';
 import type { Metadata } from 'next';
 import './globals.css';
 import { stagerDb } from '@stager/database';
@@ -25,7 +26,7 @@ function hexToRgba(hex: string, alpha: number): string {
 export default async function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   const org = await stagerDb.getOrganization();
   const brandPrimary = org?.brand_color || '#10b981';
@@ -40,7 +41,7 @@ export default async function RootLayout({
     '--brand-muted': brandMuted,
     '--brand-subtle': brandSubtle,
     '--brand-foreground': '#ffffff',
-  } as React.CSSProperties;
+  } as CSSProperties;
 
   return (
     <html lang="en" className="dark" style={brandVars}>
