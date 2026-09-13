@@ -18,9 +18,11 @@ import {
   LIVE_JIRA_ISSUES,
   LIVE_CALENDAR_EVENTS,
 } from './mock-data';
+import { parseGoLinkInput } from './go-link-params';
 
 export * from './types';
 export * from './mock-data';
+export * from './go-link-params';
 
 let supabaseInstance: SupabaseClient | null = null;
 
@@ -68,7 +70,7 @@ class InMemoryStore {
   }
 
   async resolveGoLink(keyword: string): Promise<GoLink | null> {
-    const cleanKey = keyword.trim().toLowerCase().replace(/^go\//, '').replace(/^\//, '');
+    const { keyword: cleanKey } = parseGoLinkInput(keyword);
     const link = this.goLinks.find(
       (l) => l.keyword.toLowerCase() === cleanKey
     );
@@ -82,9 +84,10 @@ class InMemoryStore {
   async createGoLink(
     keyword: string,
     targetUrl: string,
-    description?: string
+    description?: string,
+    defaultUrl?: string
   ): Promise<GoLink> {
-    const cleanKey = keyword.trim().toLowerCase().replace(/^go\//, '').replace(/^\//, '');
+    const { keyword: cleanKey } = parseGoLinkInput(keyword);
     const existingIndex = this.goLinks.findIndex(
       (l) => l.keyword.toLowerCase() === cleanKey
     );
@@ -94,6 +97,7 @@ class InMemoryStore {
       this.goLinks[existingIndex] = {
         ...this.goLinks[existingIndex],
         target_url: targetUrl,
+        default_url: defaultUrl !== undefined ? (defaultUrl || null) : this.goLinks[existingIndex].default_url,
         description: description || this.goLinks[existingIndex].description,
       };
       return { ...this.goLinks[existingIndex] };
@@ -104,6 +108,7 @@ class InMemoryStore {
       org_id: MOCK_ORGANIZATION.id,
       keyword: cleanKey,
       target_url: targetUrl,
+      default_url: defaultUrl || null,
       description: description || null,
       click_count: 0,
       created_by: MOCK_PROFILE.id,
@@ -323,7 +328,7 @@ export const stagerDb = {
   },
 
   async resolveGoLink(keyword: string): Promise<GoLink | null> {
-    const cleanKey = keyword.trim().toLowerCase().replace(/^go\//, '').replace(/^\//, '');
+    const { keyword: cleanKey } = parseGoLinkInput(keyword);
     const supabase = getSupabaseClient();
     if (supabase) {
       const { data, error } = await supabase
@@ -348,9 +353,10 @@ export const stagerDb = {
   async createGoLink(
     keyword: string,
     targetUrl: string,
-    description?: string
+    description?: string,
+    defaultUrl?: string
   ): Promise<GoLink> {
-    const cleanKey = keyword.trim().toLowerCase().replace(/^go\//, '').replace(/^\//, '');
+    const { keyword: cleanKey } = parseGoLinkInput(keyword);
     const supabase = getSupabaseClient();
     if (supabase) {
       const { data, error } = await supabase
@@ -359,6 +365,7 @@ export const stagerDb = {
           org_id: MOCK_ORGANIZATION.id,
           keyword: cleanKey,
           target_url: targetUrl,
+          default_url: defaultUrl || null,
           description: description || null,
           created_by: MOCK_PROFILE.id,
         })
@@ -367,7 +374,7 @@ export const stagerDb = {
 
       if (!error && data) return data as GoLink;
     }
-    return globalStore.createGoLink(cleanKey, targetUrl, description);
+    return globalStore.createGoLink(cleanKey, targetUrl, description, defaultUrl);
   },
 
   async getBroadcasts(userId: string = MOCK_PROFILE.id, department?: string): Promise<Broadcast[]> {

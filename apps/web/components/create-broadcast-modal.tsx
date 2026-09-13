@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { X, Megaphone, Plus, Trash2, Clock, Users, Check } from 'lucide-react';
 import { CreateBroadcastInput } from '@stager/database';
 
@@ -34,7 +34,6 @@ export function CreateBroadcastModal({
   onCreated,
 }: CreateBroadcastModalProps) {
   const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
   const [department, setDepartment] = useState('All');
   const [authorName, setAuthorName] = useState('Alex Chen');
   const [authorRole, setAuthorRole] = useState('Lead Engineer');
@@ -43,6 +42,8 @@ export function CreateBroadcastModal({
   const [pollOptions, setPollOptions] = useState<string[]>(['Yes / In Favor', 'No / Opposed']);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [editorKey, setEditorKey] = useState(0);
+  const contentRef = useRef('');
 
   if (!open) return null;
 
@@ -73,7 +74,7 @@ export function CreateBroadcastModal({
       return;
     }
 
-    if (!content.trim()) {
+    if (!contentRef.current.trim()) {
       setError('Announcement content is required.');
       return;
     }
@@ -91,7 +92,7 @@ export function CreateBroadcastModal({
     try {
       await onCreated({
         title: title.trim(),
-        content: content.trim(),
+        content: contentRef.current.trim(),
         department,
         author_name: authorName.trim() || 'Alex Chen',
         author_role: authorRole.trim() || 'Lead Engineer',
@@ -101,7 +102,8 @@ export function CreateBroadcastModal({
 
       // Reset form
       setTitle('');
-      setContent('');
+      contentRef.current = '';
+      setEditorKey((k) => k + 1);
       setDepartment('All');
       setHasPoll(false);
       setPollOptions(['Yes / In Favor', 'No / Opposed']);
@@ -163,6 +165,7 @@ export function CreateBroadcastModal({
               type="text"
               required
               value={title}
+              autoFocus
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Q4 Cloud Infrastructure Maintenance Window"
               className="w-full px-3 py-2 text-sm bg-surface-elevated border border-surface-highlight rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand transition-colors"
@@ -236,25 +239,8 @@ export function CreateBroadcastModal({
             </div>
           </div>
 
-          {/* Content (Markdown) */}
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="block text-xs font-medium text-slate-300">
-                Announcement Content <span className="text-brand">*</span>
-              </label>
-              <span className="text-[10px] text-slate-500 font-mono">
-                Supports markdown **bold**, `code`
-              </span>
-            </div>
-            <textarea
-              required
-              rows={3}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Describe the operational change, release date, action items, or critical alert..."
-              className="w-full px-3 py-2 text-xs bg-surface-elevated border border-surface-highlight rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand transition-colors leading-relaxed resize-none"
-            />
-          </div>
+          {/* Content (Markdown) — local editor so keystrokes do not re-render the modal */}
+          <BroadcastBodyEditor key={editorKey} contentRef={contentRef} />
 
           {/* Micro-Poll Section */}
           <div className="pt-2 border-t border-surface-elevated">
@@ -341,6 +327,76 @@ export function CreateBroadcastModal({
           </div>
         </form>
       </div>
+    </div>
+  );
+}
+
+function toPreviewHtml(text: string): string {
+  const escaped = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  return escaped
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/`([^`]+)`/g, '<code class="font-mono text-[11px] bg-surface px-1 py-0.5 rounded">$1</code>')
+    .replace(/\n/g, '<br/>');
+}
+
+function BroadcastBodyEditor({
+  contentRef,
+}: {
+  contentRef: React.MutableRefObject<string>;
+}) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [previewSource, setPreviewSource] = useState('');
+
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const onInput = () => {
+      contentRef.current = el.value;
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => setPreviewSource(el.value), 150);
+    };
+
+    el.addEventListener('input', onInput);
+    return () => {
+      el.removeEventListener('input', onInput);
+      if (timer) clearTimeout(timer);
+    };
+  }, [contentRef]);
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1">
+        <label htmlFor="broadcast-content" className="block text-xs font-medium text-slate-300">
+          Announcement Content <span className="text-brand">*</span>
+        </label>
+        <span className="text-[10px] text-slate-500 font-mono">
+          Supports markdown **bold**, `code`
+        </span>
+      </div>
+      <textarea
+        id="broadcast-content"
+        ref={textareaRef}
+        required
+        rows={3}
+        defaultValue=""
+        name="content"
+        placeholder="Describe the operational change, release date, action items, or critical alert..."
+        className="w-full px-3 py-2 text-xs bg-surface-elevated border border-surface-highlight rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand transition-colors leading-relaxed resize-none"
+      />
+      {previewSource.trim() ? (
+        <div className="mt-2 rounded-lg border border-surface-highlight/70 bg-surface-elevated/40 px-3 py-2">
+          <p className="text-[10px] uppercase tracking-wide text-slate-500 mb-1">Preview</p>
+          <div
+            className="text-xs text-slate-300 leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: toPreviewHtml(previewSource) }}
+          />
+        </div>
+      ) : null}
     </div>
   );
 }

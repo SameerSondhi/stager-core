@@ -35,16 +35,18 @@ export default async function RootLayout({
   const displayName = org?.display_name || org?.name || 'Acme Corp';
   const initial = displayName.charAt(0).toUpperCase();
 
+  const brandVars = {
+    '--brand-primary': brandPrimary,
+    '--brand-muted': brandMuted,
+    '--brand-subtle': brandSubtle,
+    '--brand-foreground': '#ffffff',
+  } as React.CSSProperties;
+
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" style={brandVars}>
       <body
         className="min-h-screen bg-background text-slate-100 antialiased selection:bg-brand-subtle selection:text-brand"
-        style={{
-          '--brand-primary': brandPrimary,
-          '--brand-muted': brandMuted,
-          '--brand-subtle': brandSubtle,
-          '--brand-foreground': '#ffffff',
-        } as React.CSSProperties}
+        style={brandVars}
       >
         {/* Enterprise Top Header Strip */}
         <div className="w-full bg-surface-elevated/40 border-b border-surface-highlight/50 px-4 sm:px-6 py-1.5 flex items-center justify-between text-xs backdrop-blur-sm">

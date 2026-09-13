@@ -6,7 +6,11 @@
   "permissions": [
     "sidePanel",
     "storage",
-    "alarms"
+    "alarms",
+    "tabs"
+  ],
+  "host_permissions": [
+    "http://localhost:3000/*"
   ],
   "omnibox": {
     "keyword": "go"

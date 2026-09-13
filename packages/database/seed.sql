@@ -31,13 +31,14 @@ VALUES (
 ) ON CONFLICT (id) DO UPDATE SET email = EXCLUDED.email;
 
 -- 3. Insert 5 Realistic Go-Links
-INSERT INTO go_links (id, org_id, keyword, target_url, description, click_count, created_by)
+INSERT INTO go_links (id, org_id, keyword, target_url, default_url, description, click_count, created_by)
 VALUES 
     (
         'g0000000-0000-0000-0000-000000000001',
         'a0000000-0000-0000-0000-000000000001',
         'github',
         'https://github.com/acme-corp',
+        NULL,
         'Acme Core GitHub Repositories and monorepos',
         421,
         'u00000000-0000-0000-0000-000000000001'
@@ -47,6 +48,7 @@ VALUES
         'a0000000-0000-0000-0000-000000000001',
         'docs',
         'https://docs.acme.internal',
+        NULL,
         'Internal Architecture & Engineering RFC Documentation',
         318,
         'u00000000-0000-0000-0000-000000000001'
@@ -56,6 +58,7 @@ VALUES
         'a0000000-0000-0000-0000-000000000001',
         'standup',
         'https://meet.google.com/acme-standup',
+        NULL,
         'Daily Morning Engineering Sync & Standup Room',
         294,
         'u00000000-0000-0000-0000-000000000001'
@@ -64,6 +67,7 @@ VALUES
         'g0000000-0000-0000-0000-000000000004',
         'a0000000-0000-0000-0000-000000000001',
         'jira',
+        'https://acme.atlassian.net/browse/{}',
         'https://acme.atlassian.net',
         'Active Sprint Boards, Epics & Incident Tracker',
         240,
@@ -74,12 +78,23 @@ VALUES
         'a0000000-0000-0000-0000-000000000001',
         'design',
         'https://www.figma.com/@acme',
+        NULL,
         'Company Design System, Token Specs & Figma UI Kit',
         185,
         'u00000000-0000-0000-0000-000000000001'
+    ),
+    (
+        'g0000000-0000-0000-0000-000000000006',
+        'a0000000-0000-0000-0000-000000000001',
+        'pr',
+        'https://github.com/acme-corp/stager/pull/{}',
+        'https://github.com/acme-corp/stager/pulls',
+        'Acme Core Pull Requests by ID',
+        156,
+        'u00000000-0000-0000-0000-000000000001'
     )
 ON CONFLICT (org_id, keyword) DO UPDATE 
-SET target_url = EXCLUDED.target_url, description = EXCLUDED.description;
+SET target_url = EXCLUDED.target_url, default_url = EXCLUDED.default_url, description = EXCLUDED.description;
 
 -- 4. Insert 2 Sample Broadcast Announcements
 INSERT INTO broadcasts (id, org_id, title, content, department, author_name, author_role, poll_options, is_pinned, expires_at)

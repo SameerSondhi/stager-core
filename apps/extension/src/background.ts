@@ -10,8 +10,72 @@ const TOP_LINK_LIMIT = 50;
 interface CachedGoLink {
   keyword: string;
   target_url: string;
+  default_url?: string | null;
   description?: string | null;
   click_count?: number;
+}
+
+function parseGoLinkInput(raw: string): { keyword: string; parameter: string | null } {
+  const cleaned = raw
+    .trim()
+    .replace(/^go\//i, '')
+    .replace(/^go\s+/i, '')
+    .replace(/^\//, '');
+  if (!cleaned) return { keyword: '', parameter: null };
+  const match = cleaned.match(/^([^\s/]+)(?:[\s/]+(.+))?$/);
+  const keyword = (match?.[1] || cleaned).toLowerCase();
+  const parameter = match?.[2]?.trim() ? match[2].trim() : null;
+  return { keyword, parameter };
+}
+
+function interpolateGoLinkUrl(
+  link: Pick<CachedGoLink, 'target_url' | 'default_url'>,
+  parameter: string | null
+): string {
+  const hasPlaceholder = link.target_url.includes('{}');
+
+  let resolved: string;
+  if (parameter && hasPlaceholder) {
+    resolved = link.target_url.replace(/\{\}/g, encodeURIComponent(parameter));
+  } else if (!parameter && hasPlaceholder) {
+    if (link.default_url && link.default_url.trim().length > 0) {
+      resolved = link.default_url.trim();
+    } else {
+      resolved = link.target_url.replace(/\/\{\}$|\{\}$/, '').replace(/\{\}/g, '');
+    }
+  } else if (!parameter) {
+    if (link.default_url && link.default_url.trim().length > 0) {
+      resolved = link.default_url.trim();
+    } else {
+      resolved = link.target_url;
+    }
+  } else {
+    resolved = link.target_url;
+  }
+
+  // Safety guarantee: Never return a URL containing literal `{}` or `%7B%7D`
+  return resolved
+    .replace(/\/\{\}$|\{\}$/, '')
+    .replace(/\{\}/g, '')
+    .replace(/\/%7B%7D$|%7B%7D$/i, '')
+    .replace(/%7B%7D/gi, '');
+}
+
+
+function goLinkParamPlaceholder(keyword: string): string {
+  switch (keyword.toLowerCase()) {
+    case 'jira':
+      return '<issue-key>';
+    case 'pr':
+      return '<pull-id>';
+    default:
+      return '<param>';
+  }
+}
+
+/** Preserve trailing arguments (e.g. `jira ENG-204`) without lowercasing the parameter. */
+function omniboxQuery(text: string): string {
+  return text.trim().replace(/^go\//i, '').replace(/^\//, '');
 }
 
 // Enable side panel to open upon clicking the toolbar icon
@@ -46,16 +110,16 @@ chrome.omnibox.onInputStarted.addListener(() => {
 
 // Handle Omnibox input: "go <keyword>"
 chrome.omnibox.onInputEntered.addListener(async (text, disposition) => {
-  const cleanKeyword = text.trim().toLowerCase().replace(/^go\//, '').replace(/^\//, '');
+  const cleanKeyword = omniboxQuery(text);
 
   if (!cleanKeyword) {
     navigate(DEFAULT_RESOLVER_BASE, disposition);
     return;
   }
 
-  const cached = await resolveFromCache(cleanKeyword);
-  if (cached?.target_url) {
-    navigate(cached.target_url, disposition);
+  const cachedUrl = await resolveFromCache(cleanKeyword);
+  if (cachedUrl) {
+    navigate(cachedUrl, disposition);
     return;
   }
 
@@ -85,7 +149,7 @@ chrome.omnibox.onInputEntered.addListener(async (text, disposition) => {
 
 // Provide suggested autocompletion in omnibox dropdown while typing
 chrome.omnibox.onInputChanged.addListener(async (text, suggest) => {
-  const query = text.trim().toLowerCase().replace(/^go\//, '');
+  const query = omniboxQuery(text);
   if (!query) return;
 
   const cached = await readCachedGoLinks();
@@ -122,6 +186,7 @@ async function syncTopGoLinks(): Promise<void> {
       .map((link) => ({
         keyword: link.keyword,
         target_url: link.target_url,
+        default_url: link.default_url ?? null,
         description: link.description ?? null,
         click_count: link.click_count || 0,
       }));
@@ -141,36 +206,69 @@ async function readCachedGoLinks(): Promise<CachedGoLink[]> {
   return Array.isArray(links) ? (links as CachedGoLink[]) : [];
 }
 
-async function resolveFromCache(keyword: string): Promise<CachedGoLink | undefined> {
+async function resolveFromCache(raw: string): Promise<string | undefined> {
+  const { keyword, parameter } = parseGoLinkInput(raw);
   const links = await readCachedGoLinks();
-  return links.find((link) => link.keyword.toLowerCase() === keyword);
+  const link = links.find((l) => l.keyword.toLowerCase() === keyword);
+  if (!link) return undefined;
+  return interpolateGoLinkUrl(link, parameter);
 }
 
 function toOmniboxSuggestions(links: CachedGoLink[], query: string) {
+  const { keyword: baseKeyword, parameter } = parseGoLinkInput(query);
+  const haystack = (baseKeyword || query).toLowerCase();
+
   return links
     .filter(
       (l) =>
-        l.keyword.includes(query) ||
-        (l.description && l.description.toLowerCase().includes(query))
+        l.keyword.includes(haystack) ||
+        (l.description && l.description.toLowerCase().includes(haystack))
     )
     .slice(0, 5)
-    .map((l) => ({
-      content: l.keyword,
-      description: `<match>go/${l.keyword}</match> <dim>(${l.description || l.target_url})</dim>`,
-    }));
+    .map((l) => {
+      const parameterized = l.target_url.includes('{}');
+      const hint = goLinkParamPlaceholder(l.keyword);
+      const interpolated =
+        parameterized && parameter ? interpolateGoLinkUrl(l, parameter) : null;
+      const syntax = parameterized ? `go ${l.keyword} ${hint}` : `go/${l.keyword}`;
+      const dest = interpolated || l.description || l.default_url || l.target_url;
+      return {
+        content: parameter && parameterized ? `${l.keyword} ${parameter}` : l.keyword,
+        description: `<match>${syntax}</match> <dim>(${dest})</dim>`,
+      };
+    });
 }
 
-function navigate(url: string, disposition: chrome.omnibox.OnInputEnteredDisposition) {
-  switch (disposition) {
-    case 'newForegroundTab':
-      chrome.tabs.create({ url, active: true });
-      break;
-    case 'newBackgroundTab':
-      chrome.tabs.create({ url, active: false });
-      break;
-    case 'currentTab':
-    default:
-      chrome.tabs.update({ url });
-      break;
+async function navigate(url: string, disposition: chrome.omnibox.OnInputEnteredDisposition) {
+  // Guard against bare URLs missing protocols
+  let targetUrl = url;
+  if (!/^https?:\/\//i.test(targetUrl) && !targetUrl.startsWith('chrome://')) {
+    targetUrl = `https://${targetUrl}`;
+  }
+
+  try {
+    switch (disposition) {
+      case 'newForegroundTab':
+        await chrome.tabs.create({ url: targetUrl, active: true });
+        break;
+      case 'newBackgroundTab':
+        await chrome.tabs.create({ url: targetUrl, active: false });
+        break;
+      case 'currentTab':
+      default: {
+        const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (activeTab?.id) {
+          await chrome.tabs.update(activeTab.id, { url: targetUrl });
+        } else {
+          // Fallback if no active tab ID is found
+          await chrome.tabs.create({ url: targetUrl, active: true });
+        }
+        break;
+      }
+    }
+  } catch (err) {
+    console.error('[Stager] Navigation error:', err);
+    await chrome.tabs.create({ url: targetUrl, active: true });
   }
 }
+

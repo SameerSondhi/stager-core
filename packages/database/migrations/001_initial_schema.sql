@@ -49,12 +49,15 @@ CREATE TABLE IF NOT EXISTS go_links (
     org_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
     keyword TEXT NOT NULL,
     target_url TEXT NOT NULL,
+    default_url TEXT,
     description TEXT,
     click_count INT NOT NULL DEFAULT 0,
     created_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
     CONSTRAINT uq_go_links_org_keyword UNIQUE (org_id, keyword)
 );
+
+ALTER TABLE go_links ADD COLUMN IF NOT EXISTS default_url TEXT;
 
 -- 4. Broadcasts
 CREATE TABLE IF NOT EXISTS broadcasts (

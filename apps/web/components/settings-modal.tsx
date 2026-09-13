@@ -50,7 +50,7 @@ export function SettingsModal({
       >
         <div className="flex items-center justify-between pb-3 border-b border-surface-elevated">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-md bg-brand-500/15 flex items-center justify-center text-brand-400 border border-brand-500/30">
+            <div className="w-7 h-7 rounded-md bg-brand-subtle flex items-center justify-center text-brand border border-brand-muted">
               <Settings className="w-4 h-4" />
             </div>
             <div>
@@ -124,7 +124,7 @@ function ConnectionRow({
       <div className="min-w-0">
         <div className="flex items-center gap-2">
           {connected ? (
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <CheckCircle2 className="w-4 h-4 text-brand shrink-0" />
           ) : (
             <CircleDashed className="w-4 h-4 text-slate-500 shrink-0" />
           )}
@@ -132,7 +132,7 @@ function ConnectionRow({
           <span
             className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium ${
               connected
-                ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                ? 'bg-brand-subtle text-brand border-brand-muted'
                 : 'bg-slate-500/15 text-slate-400 border-slate-500/30'
             }`}
           >
@@ -150,7 +150,7 @@ function ConnectionRow({
         className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors disabled:opacity-50 ${
           connected
             ? 'bg-surface hover:bg-surface-highlight text-slate-300 border border-surface-highlight'
-            : 'bg-brand-600 hover:bg-brand-500 text-white'
+            : 'bg-brand hover:opacity-90 text-brand-foreground'
         }`}
       >
         {pending && <Loader2 className="w-3.5 h-3.5 animate-spin" />}

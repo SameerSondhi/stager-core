@@ -153,7 +153,7 @@ export function LaunchpadGrid({
                     onClick={(e) => handleCopy(e, link)}
                     className={`p-1.5 rounded-md text-xs transition-colors ${
                       isCopied
-                        ? 'bg-emerald-500/20 text-emerald-400'
+                        ? 'bg-brand-subtle text-brand'
                         : 'text-slate-400 hover:text-slate-200 hover:bg-surface-elevated'
                     }`}
                   >

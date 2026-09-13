@@ -25,6 +25,7 @@ export interface GoLink {
   click_count: number;
   created_by?: string | null;
   created_at: string;
+  default_url?: string | null;
 }
 
 export interface Broadcast {

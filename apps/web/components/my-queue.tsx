@@ -26,7 +26,7 @@ export function MyQueueWidget({ queue, onOpenSettings }: MyQueueProps) {
     <span
       className={`text-[9px] uppercase tracking-wide px-1.5 py-0.5 rounded border font-semibold ${
         source === 'live'
-          ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+          ? 'bg-brand-subtle text-brand border-brand-muted'
           : 'bg-slate-500/10 text-slate-500 border-slate-500/20'
       }`}
     >
@@ -163,7 +163,7 @@ export function MyQueueWidget({ queue, onOpenSettings }: MyQueueProps) {
                   </span>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-semibold text-slate-300 group-hover:text-brand-300">
+                      <span className="font-mono text-xs font-semibold text-slate-300 group-hover:text-brand">
                         {issue.key}
                       </span>
                       <span
@@ -204,12 +204,12 @@ export function MyQueueWidget({ queue, onOpenSettings }: MyQueueProps) {
                 className="flex items-center justify-between p-2.5 rounded-lg bg-surface-elevated/40 hover:bg-surface-elevated border border-surface-highlight/50 hover:border-surface-highlight transition-all group"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-7 h-7 rounded bg-surface flex items-center justify-center text-emerald-400 shrink-0 border border-surface-highlight">
+                  <div className="w-7 h-7 rounded bg-surface flex items-center justify-center text-brand shrink-0 border border-surface-highlight">
                     <GitPullRequest className="w-3.5 h-3.5" />
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs text-brand-300">
+                      <span className="font-mono text-xs text-brand">
                         {pr.repo}
                       </span>
                       <span className="text-[11px] text-slate-500">

@@ -25,6 +25,11 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { keyword, target_url, description } = body;
+    const rawDefaultUrl = body.default_url ?? body.defaultUrl;
+    const default_url =
+      typeof rawDefaultUrl === 'string' && rawDefaultUrl.trim().length > 0
+        ? rawDefaultUrl.trim()
+        : undefined;
 
     if (!keyword || !target_url) {
       return NextResponse.json(
@@ -33,9 +38,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Basic URL validation
+    // Basic URL validation (allow `{}` parameter placeholders)
     try {
-      new URL(target_url);
+      new URL(target_url.replace(/\{\}/g, 'placeholder'));
+      if (default_url) new URL(default_url);
     } catch {
       return NextResponse.json(
         { error: 'target_url must be a valid absolute URL (e.g., https://...)' },
@@ -43,7 +49,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const created = await stagerDb.createGoLink(keyword, target_url, description);
+    const created = await stagerDb.createGoLink(
+      keyword,
+      target_url,
+      description,
+      default_url
+    );
     return NextResponse.json({ go_link: created }, { status: 201, headers: corsHeaders });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Failed to create go-link';

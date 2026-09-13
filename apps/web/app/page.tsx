@@ -21,6 +21,7 @@ import {
   OAuthConnections,
   Organization,
   CreateBroadcastInput,
+  interpolateGoLinkUrl,
 } from '@stager/database';
 import { CommandBar } from '../components/command-bar';
 import { BroadcastsWidget } from '../components/broadcasts';
@@ -91,18 +92,16 @@ export default function DashboardPage() {
     fetchData();
   }, []);
 
-  const handleOpenLink = (link: GoLink) => {
-    // Open in new tab
-    window.open(link.target_url, '_blank', 'noopener,noreferrer');
+  const handleOpenLink = (link: GoLink, resolvedUrl?: string) => {
+    const url = resolvedUrl || interpolateGoLinkUrl(link, null);
+    window.open(url, '_blank', 'noopener,noreferrer');
 
-    // Optimistically increment click count
     setGoLinks((prev) =>
       prev.map((l) =>
         l.id === link.id ? { ...l, click_count: l.click_count + 1 } : l
       )
     );
 
-    // Call resolve endpoint to update backend state
     fetch(`/api/v1/resolve?keyword=${encodeURIComponent(link.keyword)}`).catch(
       (err) => console.error('Failed to resolve link:', err)
     );
@@ -159,11 +158,20 @@ export default function DashboardPage() {
     keyword: string;
     target_url: string;
     description?: string;
+    default_url?: string | null;
+    defaultUrl?: string | null;
   }) => {
+    const fallbackUrl = newLinkData.default_url || newLinkData.defaultUrl || null;
     const res = await fetch('/api/v1/go-links', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newLinkData),
+      body: JSON.stringify({
+        keyword: newLinkData.keyword,
+        target_url: newLinkData.target_url,
+        description: newLinkData.description,
+        default_url: fallbackUrl,
+        defaultUrl: fallbackUrl,
+      }),
     });
 
     if (!res.ok) {

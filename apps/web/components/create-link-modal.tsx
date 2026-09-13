@@ -7,7 +7,14 @@ interface CreateLinkModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initialKeyword?: string;
-  onCreated: (newLink: { keyword: string; target_url: string; description?: string }) => Promise<void>;
+  onCreated: (newLink: {
+    keyword: string;
+    target_url: string;
+    description?: string;
+    default_url?: string | null;
+    defaultUrl?: string | null;
+  }) => Promise<void>;
+
 }
 
 export function CreateLinkModal({
@@ -18,9 +25,12 @@ export function CreateLinkModal({
 }: CreateLinkModalProps) {
   const [keyword, setKeyword] = useState(initialKeyword);
   const [targetUrl, setTargetUrl] = useState('');
+  const [defaultUrl, setDefaultUrl] = useState('');
   const [description, setDescription] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const hasParameterPlaceholder = targetUrl.includes('{}');
 
   useEffect(() => {
     if (initialKeyword) {
@@ -46,10 +56,24 @@ export function CreateLinkModal({
     }
 
     try {
-      new URL(url);
+      new URL(url.replace(/\{\}/g, 'placeholder'));
     } catch {
       setError('Please enter a valid URL');
       return;
+    }
+
+    let fallback: string | null = null;
+    if (hasParameterPlaceholder && defaultUrl.trim()) {
+      fallback = defaultUrl.trim();
+      if (!/^https?:\/\//i.test(fallback)) {
+        fallback = `https://${fallback}`;
+      }
+      try {
+        new URL(fallback);
+      } catch {
+        setError('Please enter a valid fallback URL');
+        return;
+      }
     }
 
     setSubmitting(true);
@@ -58,9 +82,12 @@ export function CreateLinkModal({
         keyword: cleanKey,
         target_url: url,
         description: description.trim() || undefined,
+        default_url: fallback,
+        defaultUrl: fallback,
       });
       setKeyword('');
       setTargetUrl('');
+      setDefaultUrl('');
       setDescription('');
       onOpenChange(false);
     } catch (err: unknown) {
@@ -134,11 +161,36 @@ export function CreateLinkModal({
               type="text"
               value={targetUrl}
               onChange={(e) => setTargetUrl(e.target.value)}
-              placeholder="https://acme.atlassian.net/wiki/..."
+              placeholder="https://acme.atlassian.net/browse/{}"
               required
               className="w-full px-3 py-2 rounded-lg bg-surface-elevated border border-surface-highlight text-sm text-slate-100 placeholder-slate-500 outline-none focus:border-brand transition-colors"
             />
+            <p className="text-[11px] text-slate-500 mt-1.5 leading-relaxed">
+              Tip: Add <code className="text-brand font-mono">{'{}'}</code> anywhere in the URL
+              to accept arguments (e.g., <code className="text-slate-400 font-mono">go/jira ENG-123</code>).
+            </p>
           </div>
+
+          {hasParameterPlaceholder && (
+            <div className="animate-in fade-in slide-in-from-top-1 duration-200">
+              <label className="block text-xs font-medium text-slate-300 mb-1">
+                Fallback URL (When no argument is given)
+              </label>
+              <input
+                type="text"
+                value={defaultUrl}
+                onChange={(e) => setDefaultUrl(e.target.value)}
+                placeholder="https://jira.corp.internal"
+                autoFocus={false}
+                className="w-full px-3 py-2 rounded-lg bg-surface-elevated border border-surface-highlight text-sm text-slate-100 placeholder-slate-500 outline-none focus:border-brand transition-colors"
+              />
+              <p className="text-[11px] text-slate-500 mt-1">
+                Used when someone visits{' '}
+                <code className="font-mono text-slate-400">go/{keyword.trim() || 'keyword'}</code>{' '}
+                with no argument.
+              </p>
+            </div>
+          )}
 
           <div>
             <label className="block text-xs font-medium text-slate-300 mb-1">
