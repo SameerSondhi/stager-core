@@ -63,7 +63,9 @@ CREATE TABLE IF NOT EXISTS broadcasts (
     title TEXT NOT NULL,
     content TEXT NOT NULL, -- markdown supported
     department TEXT NOT NULL DEFAULT 'All',
+    author_name TEXT,
     author_role TEXT,
+    poll_options JSONB,
     is_pinned BOOLEAN NOT NULL DEFAULT true,
     expires_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT now() NOT NULL
@@ -74,6 +76,7 @@ CREATE TABLE IF NOT EXISTS broadcast_acknowledgments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     broadcast_id UUID NOT NULL REFERENCES broadcasts(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+    poll_response TEXT,
     acknowledged_at TIMESTAMPTZ DEFAULT now() NOT NULL,
     CONSTRAINT uq_broadcast_user UNIQUE (broadcast_id, user_id)
 );

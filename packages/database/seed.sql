@@ -82,7 +82,7 @@ ON CONFLICT (org_id, keyword) DO UPDATE
 SET target_url = EXCLUDED.target_url, description = EXCLUDED.description;
 
 -- 4. Insert 2 Sample Broadcast Announcements
-INSERT INTO broadcasts (id, org_id, title, content, department, author_role, is_pinned, expires_at)
+INSERT INTO broadcasts (id, org_id, title, content, department, author_name, author_role, poll_options, is_pinned, expires_at)
 VALUES
     (
         'b0000000-0000-0000-0000-000000000001',
@@ -90,7 +90,9 @@ VALUES
         'Q3 Cloud Infrastructure Maintenance Window',
         'Upgrading core production PostgreSQL read replicas and Kubernetes node pools on **Saturday at 10:00 PM UTC**. Expect momentary read-only windows of ~2-3 minutes. SRE team on call in `#infra-war-room`.',
         'Engineering',
+        'David Ortiz',
         'Staff SRE',
+        NULL,
         true,
         now() + interval '7 days'
     ),
@@ -98,10 +100,17 @@ VALUES
         'b0000000-0000-0000-0000-000000000002',
         'a0000000-0000-0000-0000-000000000001',
         'All-Hands Company Strategy & Stager GA Milestone',
-        'Join the executive team this **Thursday at 2:00 PM EST** for company-wide updates, product launch showcases, and live Q&A. Remote attendees join via `go/allhands`.',
+        'Join the executive team this **Thursday at 2:00 PM EST** for company-wide updates, product launch showcases, and live Q&A. Remote attendees join via `go/allhands`. Please indicate your attendance format below.',
         'All',
+        'Elena Rostova',
         'Chief of Staff',
+        '["Attending in Person", "Joining Remotely", "Cannot Attend"]'::jsonb,
         true,
         now() + interval '14 days'
     )
-ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title, content = EXCLUDED.content;
+ON CONFLICT (id) DO UPDATE SET 
+    title = EXCLUDED.title, 
+    content = EXCLUDED.content,
+    author_name = EXCLUDED.author_name,
+    poll_options = EXCLUDED.poll_options;
+

@@ -9,6 +9,7 @@ import {
   Hash,
   CornerDownLeft,
   Sparkles,
+  Megaphone,
   Command as CmdIcon,
 } from 'lucide-react';
 import { GoLink } from '@stager/database';
@@ -19,6 +20,7 @@ interface CommandBarProps {
   goLinks: GoLink[];
   onSelectLink: (link: GoLink) => void;
   onCreateLinkRequest: (suggestedKeyword?: string) => void;
+  onCreateBroadcastRequest?: () => void;
 }
 
 export function CommandBar({
@@ -27,7 +29,9 @@ export function CommandBar({
   goLinks,
   onSelectLink,
   onCreateLinkRequest,
+  onCreateBroadcastRequest,
 }: CommandBarProps) {
+
   const [search, setSearch] = useState('');
   const [, startTransition] = useTransition();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -95,6 +99,40 @@ export function CommandBar({
     (l) => l.keyword.toLowerCase() === search.toLowerCase().trim()
   );
 
+  const actionMatches = [
+    {
+      id: 'post-announcement',
+      title: 'Post Team Announcement',
+      desc: 'Create a pinned broadcast with read-receipts & micro-poll',
+      icon: <Megaphone className="w-4 h-4" />,
+      iconBg: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+      tag: 'Broadcast',
+      action: () => {
+        dismiss();
+        onCreateBroadcastRequest?.();
+      },
+      keywords: ['post', 'announcement', 'broadcast', 'operational', 'poll', 'news', 'update'],
+    },
+    {
+      id: 'create-link',
+      title: 'Create New Go-Link',
+      desc: 'Add an internal shortcut to your organization directory',
+      icon: <PlusCircle className="w-4 h-4" />,
+      iconBg: 'bg-surface-elevated text-brand border-surface-highlight',
+      tag: 'Go-Link',
+      action: () => handleCreateNew(search.trim() || undefined),
+      keywords: ['create', 'new', 'go', 'link', 'shortcut', 'url'],
+    },
+  ].filter((act) => {
+    const query = search.toLowerCase().trim();
+    if (!query) return true;
+    return (
+      act.title.toLowerCase().includes(query) ||
+      act.desc.toLowerCase().includes(query) ||
+      act.keywords.some((k) => k.includes(query))
+    );
+  });
+
   const handleSelectLink = (link: GoLink) => {
     dismiss();
     onSelectLink(link);
@@ -146,7 +184,7 @@ export function CommandBar({
 
           {/* List of results */}
           <Command.List className="max-h-[380px] overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-surface-highlight">
-            {filteredLinks.length === 0 && search.trim() && (
+            {filteredLinks.length === 0 && actionMatches.length === 0 && search.trim() && (
               <div className="py-8 px-6 text-center">
                 <p className="text-sm text-slate-400">
                   No matching go-link found for{' '}
@@ -164,6 +202,46 @@ export function CommandBar({
                 </button>
               </div>
             )}
+
+            {/* Operational Actions */}
+            {actionMatches.length > 0 && (
+              <Command.Group
+                heading={
+                  <div className="flex items-center justify-between text-xs font-semibold text-slate-400 px-2 py-1">
+                    <span>QUICK ACTIONS</span>
+                  </div>
+                }
+              >
+                {actionMatches.map((act) => (
+                  <Command.Item
+                    key={act.id}
+                    value={act.title}
+                    onSelect={act.action}
+                    className="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm cursor-pointer transition-colors hover:bg-surface-elevated data-[selected=true]:bg-brand-subtle data-[selected=true]:text-brand text-slate-300 border border-transparent data-[selected=true]:border-brand-muted group"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div
+                        className={`w-8 h-8 rounded-md flex items-center justify-center shrink-0 border ${act.iconBg}`}
+                      >
+                        {act.icon}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-semibold text-slate-100 group-data-[selected=true]:text-brand">
+                          {act.title}
+                        </div>
+                        <p className="text-xs text-slate-400 truncate">
+                          {act.desc}
+                        </p>
+                      </div>
+                    </div>
+                    <kbd className="px-2 py-0.5 text-[11px] font-mono text-slate-400 bg-surface-elevated rounded border border-surface-highlight shrink-0 ml-3">
+                      {act.tag}
+                    </kbd>
+                  </Command.Item>
+                ))}
+              </Command.Group>
+            )}
+
 
             {filteredLinks.length > 0 && (
               <Command.Group

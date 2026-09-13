@@ -13,12 +13,21 @@ import {
   RefreshCw,
   Settings,
 } from 'lucide-react';
-import { GoLink, Broadcast, PersonalQueue, MOCK_PROFILE, OAuthConnections, Organization } from '@stager/database';
+import {
+  GoLink,
+  Broadcast,
+  PersonalQueue,
+  MOCK_PROFILE,
+  OAuthConnections,
+  Organization,
+  CreateBroadcastInput,
+} from '@stager/database';
 import { CommandBar } from '../components/command-bar';
 import { BroadcastsWidget } from '../components/broadcasts';
 import { LaunchpadGrid } from '../components/launchpad-grid';
 import { MyQueueWidget } from '../components/my-queue';
 import { CreateLinkModal } from '../components/create-link-modal';
+import { CreateBroadcastModal } from '../components/create-broadcast-modal';
 import { SettingsModal } from '../components/settings-modal';
 
 export default function DashboardPage() {
@@ -35,8 +44,10 @@ export default function DashboardPage() {
   // Command bar & modal state
   const [commandOpen, setCommandOpen] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [broadcastModalOpen, setBroadcastModalOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [suggestedKeyword, setSuggestedKeyword] = useState<string>('');
+
 
   const fetchData = async () => {
     try {
@@ -97,16 +108,52 @@ export default function DashboardPage() {
     );
   };
 
-  const handleAcknowledgeBroadcast = async (broadcastId: string) => {
+  const handleAcknowledgeBroadcast = async (broadcastId: string, pollResponse?: string) => {
+    // Optimistically update local state immediately
+    setBroadcasts((prev) =>
+      prev.map((b) => {
+        if (b.id !== broadcastId) return b;
+        const updatedPollResults = { ...(b.poll_results || {}) };
+        if (pollResponse) {
+          updatedPollResults[pollResponse] = (updatedPollResults[pollResponse] || 0) + 1;
+        }
+        return {
+          ...b,
+          acknowledged: true,
+          user_poll_response: pollResponse || b.user_poll_response,
+          read_count: (b.read_count || 0) + 1,
+          poll_results: b.poll_options ? updatedPollResults : undefined,
+        };
+      })
+    );
+
     const res = await fetch(`/api/v1/broadcasts/${broadcastId}/acknowledge`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ poll_response: pollResponse }),
     });
-    if (res.ok) {
-      setBroadcasts((prev) =>
-        prev.map((b) => (b.id === broadcastId ? { ...b, acknowledged: true } : b))
-      );
+
+    if (!res.ok) {
+      console.error('Failed to record broadcast acknowledgment on server');
     }
   };
+
+  const handleCreateBroadcast = async (input: CreateBroadcastInput) => {
+    const res = await fetch('/api/v1/broadcasts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input),
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to post announcement');
+    }
+
+    const { broadcast } = await res.json();
+    setBroadcasts((prev) => [broadcast, ...prev]);
+  };
+
 
   const handleCreateGoLink = async (newLinkData: {
     keyword: string;
@@ -254,6 +301,7 @@ export default function DashboardPage() {
         <BroadcastsWidget
           broadcasts={broadcasts}
           onAcknowledge={handleAcknowledgeBroadcast}
+          onOpenCreateModal={() => setBroadcastModalOpen(true)}
         />
 
         {/* 2. Go-Links Launchpad Grid */}
@@ -282,6 +330,7 @@ export default function DashboardPage() {
           setSuggestedKeyword(key || '');
           setCreateModalOpen(true);
         }}
+        onCreateBroadcastRequest={() => setBroadcastModalOpen(true)}
       />
 
       {/* Create Link Modal */}
@@ -292,12 +341,20 @@ export default function DashboardPage() {
         onCreated={handleCreateGoLink}
       />
 
+      {/* Create Broadcast Modal */}
+      <CreateBroadcastModal
+        open={broadcastModalOpen}
+        onOpenChange={setBroadcastModalOpen}
+        onCreated={handleCreateBroadcast}
+      />
+
       <SettingsModal
         open={settingsOpen}
         onOpenChange={setSettingsOpen}
         connections={connections}
         onToggle={handleOAuthToggle}
       />
+
     </div>
   );
 }

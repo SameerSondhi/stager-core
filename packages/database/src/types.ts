@@ -33,19 +33,40 @@ export interface Broadcast {
   title: string;
   content: string;
   department: string;
+  author_name?: string | null;
   author_role?: string | null;
+  poll_options?: string[] | null;
   is_pinned: boolean;
   expires_at?: string | null;
   created_at: string;
   acknowledged?: boolean;
+  acknowledged_at?: string | null;
+  read_count?: number;
+  total_targeted?: number;
+  user_poll_response?: string | null;
+  poll_results?: Record<string, number>;
 }
 
 export interface BroadcastAcknowledgment {
   id: string;
   broadcast_id: string;
   user_id: string;
+  poll_response?: string | null;
   acknowledged_at: string;
 }
+
+export interface CreateBroadcastInput {
+  title: string;
+  content: string;
+  department?: string;
+  author_name?: string;
+  author_role?: string;
+  poll_options?: string[] | null;
+  is_pinned?: boolean;
+  expires_in_hours?: number;
+  expires_at?: string;
+}
+
 
 export interface JiraIssue {
   id: string;
